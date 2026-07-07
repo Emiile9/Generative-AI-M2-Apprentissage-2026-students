@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+anthropic
+python-dotenv
+mcp
+# The backend spawns TD4's pim_server.py with its OWN python interpreter (same venv), so that
+# server's dependencies must be installed here too:
+chromadb
+sentence-transformers

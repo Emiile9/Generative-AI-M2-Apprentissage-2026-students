@@ -35,8 +35,9 @@ mcp_server = FastMCP("pim")
 
 
 def _parse_attributes(metadata):
-    if isinstance(metadata.get("attributes"), str):
-        metadata["attributes"] = json.loads(metadata["attributes"])
+    for field in ("attributes", "extra"):
+        if isinstance(metadata.get(field), str):
+            metadata[field] = json.loads(metadata[field])
     return metadata
 
 
@@ -93,9 +94,11 @@ def create_product(
     short_description: str,
     long_description: str,
     attributes: dict | None = None,
+    extra: dict | None = None,
 ) -> dict:
     """Create (or replace) a product, embed it with MiniLM, and add it to the catalog so it's
-    immediately searchable via search_products -- no reindexing needed."""
+    immediately searchable via search_products -- no reindexing needed. `attributes` is the
+    category's attribute dict; `extra` is a catch-all for supplier info that fits no catalog field."""
     doc = f"{name} — {long_description}"
     embedding = embed_model.encode(doc).tolist()
     metadata = {
@@ -106,6 +109,7 @@ def create_product(
         "short_description": short_description,
         "long_description": long_description,
         "attributes": json.dumps(attributes or {}),
+        "extra": json.dumps(extra or {}),
     }
     collection.upsert(ids=[sku], embeddings=[embedding], documents=[doc], metadatas=[metadata])
     return {"sku": sku, "status": "created"}
